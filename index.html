@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪刀石頭布大對決</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #333;
+            padding: 20px;
+        }
+
+        .game {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px 24px;
+            background: white;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 15px 40px #0003;
+        }
+
+        h1 {
+            color: #5544bb;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #777;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .score-card {
+            flex: 1;
+            padding: 15px;
+            background: #f2f0ff;
+            border-radius: 15px;
+        }
+
+        .score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #6655cc;
+        }
+
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .choice {
+            flex: 1;
+            max-width: 115px;
+            padding: 15px 5px;
+            border: 2px solid #e5e0ff;
+            border-radius: 16px;
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 16px;
+        }
+
+        .choice:hover {
+            background: #eeeaff;
+            border-color: #7766dd;
+            transform: translateY(-4px);
+        }
+
+        .emoji {
+            display: block;
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .arena {
+            padding: 20px 10px;
+            background: #f8f7ff;
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+
+        .hands {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .hand {
+            font-size: 48px;
+            margin: 10px;
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6655cc;
+            margin: 20px 0 8px;
+        }
+
+        #message {
+            color: #777;
+            min-height: 24px;
+        }
+
+        .reset {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            background: #6655cc;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .reset:hover {
+            background: #5040aa;
+        }
+
+        .footer {
+            color: #999;
+            font-size: 12px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="game">
+        <h1>✊ 剪刀石頭布 ✌️</h1>
+        <p class="subtitle">準備好了嗎？來挑戰電腦吧！</p>
+
+        <section class="scoreboard">
+            <div class="score-card">
+                <div>🙋 玩家</div>
+                <div class="score" id="playerScore">0</div>
+            </div>
+
+            <div class="score-card">
+                <div>🤖 電腦</div>
+                <div class="score" id="computerScore">0</div>
+            </div>
+        </section>
+
+        <h3>請選擇你的出拳</h3>
+
+        <div class="choices">
+            <button class="choice" onclick="play('石頭')">
+                <span class="emoji">✊</span>石頭
+            </button>
+
+            <button class="choice" onclick="play('剪刀')">
+                <span class="emoji">✌️</span>剪刀
+            </button>
+
+            <button class="choice" onclick="play('布')">
+                <span class="emoji">✋</span>布
+            </button>
+        </div>
+
+        <section class="arena">
+            <div class="hands">
+                <div>
+                    <div>你出了</div>
+                    <div class="hand" id="playerHand">❔</div>
+                    <div id="playerChoice">等待出拳</div>
+                </div>
+
+                <div style="font-size: 24px;">VS</div>
+
+                <div>
+                    <div>電腦出了</div>
+                    <div class="hand" id="computerHand">❔</div>
+                    <div id="computerChoice">等待出拳</div>
+                </div>
+            </div>
+
+            <div id="result">開始遊戲吧！</div>
+            <div id="message">選擇一個按鈕開始對決</div>
+        </section>
+
+        <button class="reset" onclick="resetGame()">
+            🔄 重新開始
+        </button>
+
+        <div class="footer">
+            剪刀勝布｜布勝石頭｜石頭勝剪刀
+        </div>
+    </main>
+
+    <script>
+        const choices = ["石頭", "剪刀", "布"];
+
+        const emojis = {
+            "石頭": "✊",
+            "剪刀": "✌️",
+            "布": "✋"
+        };
+
+        let playerScore = 0;
+        let computerScore = 0;
+        let rounds = 0;
+
+        function play(playerChoice) {
+            const computerChoice =
+                choices[Math.floor(Math.random() * choices.length)];
+
+            rounds++;
+
+            let result = "";
+
+            if (playerChoice === computerChoice) {
+                result = "平手！🤝";
+            } else if (
+                (playerChoice === "石頭" && computerChoice === "剪刀") ||
+                (playerChoice === "剪刀" && computerChoice === "布") ||
+                (playerChoice === "布" && computerChoice === "石頭")
+            ) {
+                result = "你贏了！🎉";
+                playerScore++;
+            } else {
+                result = "你輸了！😅";
+                computerScore++;
+            }
+
+            document.getElementById("playerHand").textContent =
+                emojis[playerChoice];
+
+            document.getElementById("computerHand").textContent =
+                emojis[computerChoice];
+
+            document.getElementById("playerChoice").textContent =
+                playerChoice;
+
+            document.getElementById("computerChoice").textContent =
+                computerChoice;
+
+            document.getElementById("result").textContent = result;
+
+            document.getElementById("message").textContent =
+                `第 ${rounds} 回合，繼續加油！`;
+
+            document.getElementById("playerScore").textContent =
+                playerScore;
+
+            document.getElementById("computerScore").textContent =
+                computerScore;
+        }
+
+        function resetGame() {
+            playerScore = 0;
+            computerScore = 0;
+            rounds = 0;
+
+            document.getElementById("playerScore").textContent = 0;
+            document.getElementById("computerScore").textContent = 0;
+
+            document.getElementById("playerHand").textContent = "❔";
+            document.getElementById("computerHand").textContent = "❔";
+
+            document.getElementById("playerChoice").textContent =
+                "等待出拳";
+
+            document.getElementById("computerChoice").textContent =
+                "等待出拳";
+
+            document.getElementById("result").textContent =
+                "開始遊戲吧！";
+
+            document.getElementById("message").textContent =
+                "選擇一個按鈕開始對決";
+        }
+    </script>
+</body>
+</html>
